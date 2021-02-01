@@ -36,58 +36,46 @@
 
 IF (NOT GENEVA_FULL_TREE_BUILD)
 
-	PROJECT(Geneva_Examples_Geneva)
+	PROJECT(GGenericStarter)
 
 	# For building the examples independently, we still assume that the
 	# 'CMakeModules' folder can be found at the same place as the current
 	# source folder... This avoids having to copy the same content over
 	# and over again in all the examples.
-	SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
+	SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../CMakeModules")
 
 	MESSAGE("\nPerforming an independent build of ${PROJECT_NAME}")
 	INCLUDE(CommonGenevaBuild)
 
 ENDIF ()
 
-ADD_CUSTOM_TARGET( "examples-geneva"
-	# Add all the available example's targets (EXECUTABLENAMEs) here
-	DEPENDS GSimpleOptimizer
-		GParaboloid2D
-		GParameterObjectUsagePatterns
-		GMultiCriterionParabola
-		GDirectEA
-        GDirectSA
-		GDirectSwarm
-		GFunctionMinimizer
-        GPostProcessing
-		GNeuralNetwork
-		GStarter
-		GMetaOptimizer
-		GExternalEvaluator
-		GPluggableOptimizationMonitors
-		GDependentConstraints
-		GGenericStarter
+SET ( EXECUTABLENAME GGenericStarter)
 
-	COMMENT "Building all the examples for the Optimization library."
+# This is a workaround for a CLion-problem -- see CPP270 in the JetBrains issue tracker
+ADD_CUSTOM_TARGET(CLION_ALL_GENERICSTARTER_HEADERS SOURCES)
+
+SET ( ${EXECUTABLENAME}_SRCS
+	GGenericStarter
 )
 
-ADD_SUBDIRECTORY( 01_GSimpleOptimizer )
-ADD_SUBDIRECTORY( 02_GParaboloid2D )
-ADD_SUBDIRECTORY( 03_GParameterObjectUsagePatterns )
-ADD_SUBDIRECTORY( 04_GMultiCriterionParabola )
-ADD_SUBDIRECTORY( 06_GDirectEA )
-ADD_SUBDIRECTORY( 06_GDirectSA )
-ADD_SUBDIRECTORY( 06_GDirectSwarm )
-ADD_SUBDIRECTORY( 07_GFunctionMinimizer )
-ADD_SUBDIRECTORY( 08_GPostProcessing )
-ADD_SUBDIRECTORY( 09_GNeuralNetwork )
-ADD_SUBDIRECTORY( 10_GStarter )
-ADD_SUBDIRECTORY( 11_GMetaOptimizer )
-ADD_SUBDIRECTORY( 12_GExternalEvaluator )
-ADD_SUBDIRECTORY( 13_GPluggableOptimizationMonitors )
-ADD_SUBDIRECTORY( 14_GDependentConstraints )
+ADD_EXECUTABLE(${EXECUTABLENAME}
+	${${EXECUTABLENAME}_SRCS}
+)
 
-IF(GENEVA_BUILD_WITH_OPENCL_EXAMPLES AND OpenCL_FOUND)
-    ADD_SUBDIRECTORY( 15_GOpenCLConsumer )
-ENDIF()
-ADD_SUBDIRECTORY( 16_GGenericStarter)
+TARGET_LINK_LIBRARIES (${EXECUTABLENAME}
+    ${GENEVA_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+
+ADD_SUBDIRECTORY (config)
+
+IF (GENEVA_RUN_EXAMPLES_AS_TESTS)
+	ADD_TEST(${EXECUTABLENAME} ${EXECUTABLENAME})
+ENDIF ()
+
+#IF( GENEVA_BUILD_TESTS )
+#ADD_SUBDIRECTORY (Tests)
+#ENDIF()
+
+INSTALL ( TARGETS ${EXECUTABLENAME} DESTINATION ${INSTALL_PREFIX_DATA}/examples/${EXECUTABLENAME} )
