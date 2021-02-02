@@ -43,20 +43,32 @@
 
 // Geneva header files go here
 #include <geneva/GPluggableOptimizationMonitors.hpp>
-#include <geneva/Go2.hpp>
 
 // The individual that should be optimized
-#include <geneva-interface/GenericOptimizer.hpp>
+#include <geneva-interface/Go3.hpp>
 
-using namespace Gem::Geneva;
+auto lambda = [](std::vector<double>& a) {
+  return std::accumulate(a.begin(), a.end(), 0.0);
+};
 
-// auto testfunc = using lambda_t = decltype(testfunc);
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
+  using namespace GO3;
+  /*Set start value, left &right bounds*/
   std::vector<double> start{50, 50, 50}, left{0, 0, 0}, right{100, 100, 100};
-  auto bestIndividual_ptr = GenevaOpt::FindMinimum(
-      {start, left, right}, true, [](std::vector<double> a) {
-	return std::accumulate(a.begin(), a.end(), 0.0);
-      });
-  std::cout << bestIndividual_ptr << std::endl;
+  /*create optimizer and register Algorithms in order*/
+  // Id be happy using nice designated initializers of c++20
+  GenevaOptimizer3 go3{argc, argv, .algos = {Algorithm::EA, Algorithm::GD}};
+  /*        v---------|tweak that algorithms config easily from here*/
+  // go3.algos(0).config["xxx"] = 2;
+  auto pop = Population(
+      start, left, right,
+      std::forward<decltype(lambda)>(lambda));	// Now we only have to remove
+						// this forward<>()...
+  /* change population config,mutationprob,etc. */
+  /* optimize */
+  auto best_ptr = go3.optimize(pop);
+  /* alternatively like this*/
+  // auto best_ptr = go->optimize(start, left, right, lambda);  // take Pop&
+  std::cout << best_ptr << std::endl;
 }
