@@ -60,15 +60,22 @@ int main(int argc, char** argv)
   // Id be happy using nice designated initializers of c++20
   GenevaOptimizer3 go3{argc, argv, .algos = {Algorithm::EA, Algorithm::GD}};
   /*        v---------|tweak that algorithms config easily from here*/
-  // go3.algos(0).config["xxx"] = 2;
+  // go3.algorithm(0).config[""] = 2;
   auto pop = Population(
       start, left, right,
       std::forward<decltype(lambda)>(lambda));	// Now we only have to remove
 						// this forward<>()...
   /* change population config,mutationprob,etc. */
+
   /* optimize */
+  std::cout << "pop" << pop[cfg::Iterations] << std::endl;
+  pop[cfg::Iterations] = 5;
+  std::cout << "pop" << pop[cfg::Iterations] << std::endl;
   auto best_ptr = go3.optimize(pop);
   /* alternatively like this*/
   // auto best_ptr = go->optimize(start, left, right, lambda);  // take Pop&
   std::cout << best_ptr << std::endl;
+  std::cout << "Minsigma is" << pop.factory_ptr->getMinSigma() << std::endl;
+  std::cout << "Minsigma is" << pop.factory_ptr->getMinSigma() << std::endl;
+  // std::cout << "MINSIGMA is" << std::pop["minSigma"] << std::endl;
 }
