@@ -8,6 +8,7 @@ enum Algorithms { EA, GD };
 namespace cfg {
 template <size_t I>
 using ic = std::integral_constant<std::size_t, I>;
+static inline constexpr ic<0> size{};
 static inline constexpr ic<0> Iterations{};
 static inline constexpr ic<1> test{};
 static inline constexpr ic<2> x{};
@@ -44,6 +45,11 @@ class Population : public popconf {
   {
     GenericIndividual<Function>::setFunc(std::forward<Function>(func));
   }
+  auto get()
+  {
+    //    factory_ptr->setPopulationSizes((*this)[cfg::size], 5);
+    return factory_ptr;
+  };
 };
 using algoconf = integralconfig<int, int>;
 
@@ -82,9 +88,10 @@ class GenevaOptimizer3 {
     if (go.clientMode()) go.clientRun();
 
     for (auto algo : algos) std::visit([&](auto& al) { go& al.get(); }, algo);
+
     // al.addToOptimization(go); }, algo);
 
-    go.registerContentCreator(pop.factory_ptr);
+    go.registerContentCreator(pop.get());
     return go.optimize()
 	->getBestGlobalIndividual<typename Population::Individual_t>();
   }
