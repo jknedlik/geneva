@@ -8,7 +8,7 @@ enum Algorithms { EA, GD };
 namespace cfg {
 template <size_t I>
 using ic = std::integral_constant<std::size_t, I>;
-static inline constexpr ic<0> size{};
+static inline constexpr ic<0> Size{};
 static inline constexpr ic<0> Iterations{};
 static inline constexpr ic<1> test{};
 static inline constexpr ic<2> x{};
@@ -25,31 +25,30 @@ class integralconfig {
   }
   integralconfig(std::tuple<Ts...> ts) : cfg(ts){};
 };
-using popconf = integralconfig<int, std::string, double>;
+using popconf = integralconfig<int, int, std::string, double>;
 template <typename Function>
 class Population : public popconf {
   public:
   std::shared_ptr<GenericIndividualFactory<Function>> factory_ptr;
   using Individual_t = GenericIndividual<Function>;
   Population(std::vector<double> start, std::vector<double> left,
-	     std::vector<double> right, Function& func, int Iterations = 42)
-      : Population(start, left, right, std::forward<Function>(func), Iterations)
+	     std::vector<double> right, Function& func, int Size = 100,
+	     int NumParents = 5)
+      : Population(start, left, right, std::forward<Function>(func), Size,
+		   NumParents)
   {
   }
   Population(std::vector<double> start, std::vector<double> left,
-	     std::vector<double> right, Function&& func, int Iterations = 42)
+	     std::vector<double> right, Function&& func, int Size = 100,
+	     int NumParents = 5)
       : factory_ptr(new GenericIndividualFactory<Function>(
 	    "config/GenericIndividual.json", start, left, right,
 	    std::forward<decltype(func)>(func))),
-	popconf({Iterations, "testfile", 0.0})
+	popconf({Size, NumParents, "testfile", 0.0})
   {
     GenericIndividual<Function>::setFunc(std::forward<Function>(func));
   }
-  auto get()
-  {
-    //    factory_ptr->setPopulationSizes((*this)[cfg::size], 5);
-    return factory_ptr;
-  };
+  auto get() { return factory_ptr; };
 };
 using algoconf = integralconfig<int, int>;
 
@@ -63,12 +62,6 @@ class Algorithm : public algoconf {
     algo->setMaxIteration((*this)[cfg::Iterations]);
     return algo;
   }
-  void addToOptimization(Gem::Geneva::Go2& go)
-  {
-    std::shared_ptr<AlgoT> algo = FactoryT().template get<AlgoT>();
-    algo->setMaxIteration((*this)[cfg::Iterations]);
-    go& algo;
-  };
 };
 using Algorithm_EA = Algorithm<Gem::Geneva::GEvolutionaryAlgorithmFactory,
 			       Gem::Geneva::GEvolutionaryAlgorithm>;
@@ -87,9 +80,18 @@ class GenevaOptimizer3 {
   {
     if (go.clientMode()) go.clientRun();
 
-    for (auto algo : algos) std::visit([&](auto& al) { go& al.get(); }, algo);
-
-    // al.addToOptimization(go); }, algo);
+    for (auto algo : algos)
+      std::visit(
+	  [&](auto& al) {
+	    using T = std::decay_t<decltype(al)>;
+	    auto alg = al.get();
+	    if constexpr (std::is_same_v<T, Algorithm_EA>)
+	      alg->setPopulationSizes(pop[cfg::Size], 5);
+	    alg->setMaxIteration(al[cfg::Iterations]);
+	    alg->setMaxStallIteration(al[cfg::Iterations]);
+	    go& alg;
+	  },
+	  algo);
 
     go.registerContentCreator(pop.get());
     return go.optimize()
