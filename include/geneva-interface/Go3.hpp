@@ -1,7 +1,8 @@
 #include <stdexcept>
 #include <variant>
 
-#include "geneva-interface/GenericOptimizer.hpp"
+#include "geneva-interface/GenericIndividual.tcc"
+#include "geneva/Go2.hpp"
 namespace GO3 {
 
 enum Algorithms { EA, GD };
@@ -29,8 +30,8 @@ using popconf = integralconfig<int, int, std::string, double>;
 template <typename Function>
 class Population : public popconf {
   public:
-  std::shared_ptr<GenericIndividualFactory<Function>> factory_ptr;
-  using Individual_t = GenericIndividual<Function>;
+  std::shared_ptr<Gem::Geneva::GenericIndividualFactory<Function>> factory_ptr;
+  using Individual_t = Gem::Geneva::GenericIndividual<Function>;
   Population(std::vector<double> start, std::vector<double> left,
 	     std::vector<double> right, Function& func, int Size = 100,
 	     int NumParents = 5)
@@ -41,12 +42,13 @@ class Population : public popconf {
   Population(std::vector<double> start, std::vector<double> left,
 	     std::vector<double> right, Function&& func, int Size = 100,
 	     int NumParents = 5)
-      : factory_ptr(new GenericIndividualFactory<Function>(
+      : factory_ptr(new Gem::Geneva::GenericIndividualFactory<Function>(
 	    "config/GenericIndividual.json", start, left, right,
 	    std::forward<decltype(func)>(func))),
 	popconf({Size, NumParents, "testfile", 0.0})
   {
-    GenericIndividual<Function>::setFunc(std::forward<Function>(func));
+    Gem::Geneva::GenericIndividual<Function>::setFunc(
+	std::forward<Function>(func));
   }
   auto get() { return factory_ptr; };
 };
