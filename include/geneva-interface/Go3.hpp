@@ -82,6 +82,7 @@ class GenevaOptimizer3 {
   {
     if (go.clientMode()) go.clientRun();
 
+    int currMaxIteration = 0;
     for (auto algo : algos)
       std::visit(
 	  [&](auto& al) {
@@ -89,8 +90,9 @@ class GenevaOptimizer3 {
 	    auto alg = al.get();
 	    if constexpr (std::is_same_v<T, Algorithm_EA>)
 	      alg->setPopulationSizes(pop[cfg::Size], 5);
-	    alg->setMaxIteration(al[cfg::Iterations]);
-	    alg->setMaxStallIteration(al[cfg::Iterations]);
+	    /* User expects each algo to add its iterations to the process*/
+	    alg->setMaxIteration(currMaxIteration += al[cfg::Iterations]);
+	    alg->setMaxStallIteration(currMaxIteration);
 	    go& alg;
 	  },
 	  algo);
