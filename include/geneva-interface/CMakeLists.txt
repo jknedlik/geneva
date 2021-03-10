@@ -1,9 +1,6 @@
 SET(INTERFACEINCLUDES
-   GenericIndividual.hpp
+        GenericIndividual.hpp
 	GenericIndividual.tcc
-	GenericOptimizer.hpp
-	GenericStarter.tcc
-	GOptions.hpp
 	Go3.hpp
 )
 
