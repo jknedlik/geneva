@@ -1,5 +1,7 @@
+#include <memory>
 #include <stdexcept>
 #include <variant>
+#include <vector>
 
 #include "geneva-interface/GenericIndividual.tcc"
 #include "geneva/Go2.hpp"
@@ -14,13 +16,14 @@ static inline constexpr ic<0> Iterations{};
 static inline constexpr ic<1> test{};
 static inline constexpr ic<2> x{};
 }  // namespace cfg
+using namespace Gem::Geneva;
 template <typename... Ts>
 class integralconfig {
   protected:
   public:
   std::tuple<Ts...> cfg;
   template <typename Integral>
-  constexpr auto& operator[](Integral)
+  constexpr auto &operator[](Integral)
   {
     return std::get<Integral::value>(cfg);
   }
@@ -30,25 +33,24 @@ using popconf = integralconfig<int, int, std::string, double>;
 template <typename Function>
 class Population : public popconf {
   public:
-  std::shared_ptr<Gem::Geneva::GenericIndividualFactory<Function>> factory_ptr;
-  using Individual_t = Gem::Geneva::GenericIndividual<Function>;
+  using Individual = GenericIndividual<Function>;
+  using Factory = GenericIndividualFactory<Function>;
+  std::shared_ptr<Factory> factory_ptr;
   Population(std::vector<double> start, std::vector<double> left,
-	     std::vector<double> right, Function& func, int Size = 100,
+	     std::vector<double> right, Function &func, int Size = 100,
 	     int NumParents = 5)
       : Population(start, left, right, std::forward<Function>(func), Size,
 		   NumParents)
   {
   }
   Population(std::vector<double> start, std::vector<double> left,
-	     std::vector<double> right, Function&& func, int Size = 100,
+	     std::vector<double> right, Function &&func, int Size = 100,
 	     int NumParents = 5)
-      : factory_ptr(new Gem::Geneva::GenericIndividualFactory<Function>(
-	    "config/GenericIndividual.json", start, left, right,
-	    std::forward<decltype(func)>(func))),
+      : factory_ptr(new Factory("config/GenericIndividual.json", start, left,
+				right, std::forward<decltype(func)>(func))),
 	popconf({Size, NumParents, "testfile", 0.0})
   {
-    Gem::Geneva::GenericIndividual<Function>::setFunc(
-	std::forward<Function>(func));
+    Individual::setFunc(std::forward<Function>(func));
   }
   auto get() { return factory_ptr; };
 };
@@ -65,41 +67,41 @@ class Algorithm : public algoconf {
     return algo;
   }
 };
-using Algorithm_EA = Algorithm<Gem::Geneva::GEvolutionaryAlgorithmFactory,
-			       Gem::Geneva::GEvolutionaryAlgorithm>;
-using Algorithm_GD = Algorithm<Gem::Geneva::GGradientDescentFactory,
-			       Gem::Geneva::GGradientDescent>;
+using Algorithm_EA =
+    Algorithm<GEvolutionaryAlgorithmFactory, GEvolutionaryAlgorithm>;
+using Algorithm_GD = Algorithm<GGradientDescentFactory, GGradientDescent>;
 
 class GenevaOptimizer3 {
   using algorithmsT = std::vector<std::variant<Algorithm_EA, Algorithm_GD>>;
 
   public:
-  Gem::Geneva::Go2 go;
-  GenevaOptimizer3(int argc, char** argv) : go(argc, argv, "config/Go2.json"){};
+  Go2 go;
+  GenevaOptimizer3(int argc, char **argv) : go(argc, argv, "config/Go2.json"){};
 
   template <typename Population>
-  auto optimize(Population& pop, algorithmsT algos = {Algorithm_EA()})
+  auto optimize(Population &pop, algorithmsT algos = {Algorithm_EA()})
   {
     if (go.clientMode()) go.clientRun();
 
     int currMaxIteration = 0;
     for (auto algo : algos)
       std::visit(
-	  [&](auto& al) {
+	  [&](auto &al) {
 	    using T = std::decay_t<decltype(al)>;
 	    auto alg = al.get();
 	    if constexpr (std::is_same_v<T, Algorithm_EA>)
 	      alg->setPopulationSizes(pop[cfg::Size], 5);
-	    /* User expects each algo to add its iterations to the process*/
+	    /* User expects each algo to add its
+	     * iterations to the process*/
 	    alg->setMaxIteration(currMaxIteration += al[cfg::Iterations]);
 	    alg->setMaxStallIteration(currMaxIteration);
-	    go& alg;
+	    go &alg;
 	  },
 	  algo);
 
     go.registerContentCreator(pop.get());
-    return go.optimize()
-	->getBestGlobalIndividual<typename Population::Individual_t>();
+    using Individual = typename Population::Individual;
+    return go.optimize()->getBestGlobalIndividual<Individual>();
   }
 };
 }  // namespace GO3

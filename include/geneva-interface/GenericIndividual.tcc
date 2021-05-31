@@ -130,19 +130,7 @@ double GenericIndividual<F>::getAverageSigma() const
   std::vector<double> sigmas;
 
   // Loop over all parameter objects
-  for (std::size_t i = 0; i < this->size(); i++) {
-    // Extract the parameter object
-    std::shared_ptr<GConstrainedDoubleObject> gcdo_ptr =
-	this->at<GConstrainedDoubleObject>(i);
-
-    // Extract the adaptor
-    std::shared_ptr<GDoubleGaussAdaptor> adaptor_ptr =
-	gcdo_ptr->getAdaptor<GDoubleGaussAdaptor>();
-
-    // Extract the sigma value
-    sigmas.push_back(adaptor_ptr->getSigma());
-  }
-
+  for (std::size_t i = 0; i < this->size(); i++) sigmas.push_back(getSigma(i));
   // Return the average
   return Gem::Common::GMean(sigmas);
 }
@@ -151,12 +139,10 @@ template <typename F>
 double GenericIndividual<F>::getSigma(size_t indx) const
 {
   // Extract the parameter object
-  std::shared_ptr<GConstrainedDoubleObject> gcdo_ptr =
-      this->at<GConstrainedDoubleObject>(indx);
+  auto gcdo_ptr = this->at<GConstrainedDoubleObject>(indx);
 
   // Extract the adaptor
-  std::shared_ptr<GDoubleGaussAdaptor> adaptor_ptr =
-      gcdo_ptr->getAdaptor<GDoubleGaussAdaptor>();
+  auto adaptor_ptr = gcdo_ptr->getAdaptor<GDoubleGaussAdaptor>();
 
   // Extract the sigma value
   return adaptor_ptr->getSigma();

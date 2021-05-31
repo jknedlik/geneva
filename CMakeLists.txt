@@ -38,7 +38,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10 FATAL_ERROR)
 
 MESSAGE ("")
 
-PROJECT (Geneva_Library_Collection)
+PROJECT (Geneva_Library_Collection LANGUAGES CXX)
 
 ################################################################################
 # We create some examples and test programs as part of the build process.
@@ -84,6 +84,12 @@ SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 ###############################################################################
 # Include the shared functionality module for any Geneva build
 
+IF(GENEVA_BUILD_PYTHON)
+	add_subdirectory(extern/pybind11)
+	#find_package(pybind11 REQUIRED) should later be used instead
+	pybind11_add_module(example pyneva/example.cpp)
+ENDIF()
+	
 INCLUDE(CommonGenevaBuild)
 
 ###############################################################################

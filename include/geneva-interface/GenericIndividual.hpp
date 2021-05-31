@@ -145,23 +145,20 @@ class GenericIndividual : public GParameterSet {
 
     // Add the required number of GConstrainedDoubleObject objects to the
     // individual
+    auto make_gcon = [&](int i) {
+      if (Gem::Common::GFACTTORYFIRSTID == prod_id)
+	// intialize first using startValues
+	return std::make_shared<GConstrainedDoubleObject>(
+	    startValues.at(i), lowerBoundaries.at(i), upperBoundaries.at(i));
+      // intialize randomly
+      return std::make_shared<GConstrainedDoubleObject>(lowerBoundaries.at(i),
+							upperBoundaries.at(i));
+    };
     for (std::size_t i = 0; i < startValues.size(); i++) {
-      std::shared_ptr<GConstrainedDoubleObject> gcdo_ptr;
-      if (Gem::Common::GFACTTORYFIRSTID ==
-	  prod_id) {  // First individual, initialization with standard values
-	gcdo_ptr = std::shared_ptr<GConstrainedDoubleObject>(
-	    new GConstrainedDoubleObject(startValues.at(i),
-					 lowerBoundaries.at(i),
-					 upperBoundaries.at(i)));
-      }
-      else {  // Random initialization for all other individuals
-	gcdo_ptr = std::shared_ptr<GConstrainedDoubleObject>(
-	    new GConstrainedDoubleObject(lowerBoundaries.at(i),
-					 upperBoundaries.at(i)));
-      }
+      auto gcdo_ptr = make_gcon(i);
 
-      std::shared_ptr<GDoubleGaussAdaptor> gdga_ptr(
-	  new GDoubleGaussAdaptor(sigma, sigmaSigma, minSigma, maxSigma));
+      auto gdga_ptr = std::make_shared<GDoubleGaussAdaptor>(sigma, sigmaSigma,
+							    minSigma, maxSigma);
 
       gdga_ptr->setAdaptionProbability(adProb);
       gcdo_ptr->addAdaptor(gdga_ptr);
