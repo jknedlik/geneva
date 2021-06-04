@@ -97,7 +97,10 @@ public:
     auto
     optimize( Population & pop, algorithmsT algos = { Algorithm_EA() } )
     {
-        if ( go.clientMode() ) go.clientRun();
+        if ( go.clientMode() ) {
+            go.clientRun();
+            exit( 0 );
+        }
 
         int currMaxIteration = 0;
         for ( auto algo: algos )
