@@ -74,9 +74,14 @@ class GenevaOptimizer3 {
   template <typename Population>
   auto optimize(Population& pop, algorithmsT algos = {Algorithm_EA()})
   {
+    using ftype = std::function<double(std::vector<double>&)>;
+    using Individual = typename Population::Individual;
+    Individual::setFunc(std::forward<ftype>(pop.func));
     if (go.clientMode()) {
       go.clientRun();
-      exit(0);
+      using shared_ptr =
+	  decltype(go.optimize()->getBestGlobalIndividual<Individual>());
+      return s_p();  // return empty shared_ptr
     }
 
     int currMaxIteration = 0;
@@ -89,7 +94,6 @@ class GenevaOptimizer3 {
 	      alg->setPopulationSizes(pop.Size, 5);
 	    /* User expects each algo to add its
 	     * iterations to the process*/
-	    std::cout << "iterations:" << al.Iterations << std::endl;
 	    alg->setMaxIteration(currMaxIteration += al[cfg::Iterations]);
 	    alg->setMaxStallIteration(currMaxIteration);
 	    go& alg;
@@ -103,3 +107,5 @@ class GenevaOptimizer3 {
 };
 
 }  // namespace GO3
+BOOST_CLASS_EXPORT(Gem::Geneva::GenericIndividual<
+		   std::function<double(std::vector<double>&)>>);
