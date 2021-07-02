@@ -253,7 +253,6 @@ GenericIndividualFactory<F>::GenericIndividualFactory(
       maxSigma_(GSI_DEF_MAXSIGMA),
       func(f)
 { /* nothing */
-  GenericIndividual<F>::setFunc(std::forward<F>(f));
 }
 template <typename F>
 GenericIndividualFactory<F>::GenericIndividualFactory(
@@ -268,10 +267,7 @@ GenericIndividualFactory<F>::GenericIndividualFactory(
       sigmaSigma_(GSI_DEF_SIGMASIGMA),
       minSigma_(GSI_DEF_MINSIGMA),
       maxSigma_(GSI_DEF_MAXSIGMA),
-      func(f)
-{
-  GenericIndividual<F>::setFunc(std::forward<F>(f));
-};
+      func(f){/* nothing */};
 /**
  * The destructor
  */
@@ -367,3 +363,4 @@ std::function<double(std::vector<double> &)> GenericIndividual<F>::func;
 
 } /* namespace Geneva */
 } /* namespace Gem */
+

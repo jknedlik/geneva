@@ -53,10 +53,10 @@ class GenericIndividual : public GParameterSet {
   {
     ar &BOOST_SERIALIZATION_BASE_OBJECT_NVP(GParameterSet);
   }
-  static std::function<double(std::vector<double> &)> func;
   double Fitness(std::vector<double> &params) { return func(params); }
 
   public:
+  static std::function<double(std::vector<double> &)> func;
   static void setFunc(std::function<double(std::vector<double> &)> &&f)
   {
     func = f;
