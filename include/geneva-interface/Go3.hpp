@@ -79,9 +79,9 @@ class GenevaOptimizer3 {
     Individual::setFunc(std::forward<ftype>(pop.func));
     if (go.clientMode()) {
       go.clientRun();
-      using shared_ptr =
+      using ptr =
 	  decltype(go.optimize()->getBestGlobalIndividual<Individual>());
-      return s_p();  // return empty shared_ptr
+      return ptr();  // return empty shared_ptr
     }
 
     int currMaxIteration = 0;
