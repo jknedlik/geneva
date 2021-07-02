@@ -244,7 +244,7 @@ std::ostream &operator<<(std::ostream &stream,
  */
 template <typename F>
 GenericIndividualFactory<F>::GenericIndividualFactory(
-    const std::string &configFile, F &&f)
+    const std::string &configFile, F &f)
     : Gem::Common::GFactoryT<GParameterSet>(configFile),
       adProb_(GSI_DEF_ADPROB),
       sigma_(GSI_DEF_SIGMA),
@@ -253,11 +253,12 @@ GenericIndividualFactory<F>::GenericIndividualFactory(
       maxSigma_(GSI_DEF_MAXSIGMA),
       func(f)
 { /* nothing */
+  GenericIndividual<F>::setFunc(std::forward<F>(f));
 }
 template <typename F>
 GenericIndividualFactory<F>::GenericIndividualFactory(
     const std::string &configFile, const std::vector<double> &start,
-    const std::vector<double> &left, const std::vector<double> &right, F &&f)
+    const std::vector<double> &left, const std::vector<double> &right, F &f)
     : Gem::Common::GFactoryT<GParameterSet>(configFile),
       startValues_(start),
       lowerBoundaries_(left),
@@ -267,7 +268,10 @@ GenericIndividualFactory<F>::GenericIndividualFactory(
       sigmaSigma_(GSI_DEF_SIGMASIGMA),
       minSigma_(GSI_DEF_MINSIGMA),
       maxSigma_(GSI_DEF_MAXSIGMA),
-      func(f){};
+      func(f)
+{
+  GenericIndividual<F>::setFunc(std::forward<F>(f));
+};
 /**
  * The destructor
  */

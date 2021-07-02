@@ -209,10 +209,10 @@ class GenericIndividualFactory : public Gem::Common::GFactoryT<GParameterSet> {
   using Function_t = Function;
   /** @brief The standard constructor */
 
-  GenericIndividualFactory(const std::string &, Function &&func);
+  GenericIndividualFactory(const std::string &, Function &func);
   GenericIndividualFactory(const std::string &, const std::vector<double> &,
 			   const std::vector<double> &,
-			   const std::vector<double> &, Function &&func);
+			   const std::vector<double> &, Function &func);
   /** @brief The destructor */
   virtual ~GenericIndividualFactory();
 
